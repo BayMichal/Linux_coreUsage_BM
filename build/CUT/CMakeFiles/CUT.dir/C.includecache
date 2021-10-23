@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/michal/Pulpit/app/Linux_coreUsage_BM/CUT/main.c
+unistd.h
+-
+sys/types.h
+-
+errno.h
+-
+stdio.h
+-
+stdlib.h
+-
+pthread.h
+-
+string.h
+-
+
