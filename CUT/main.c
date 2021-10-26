@@ -1,8 +1,8 @@
 //----------------------------------------------------
 //                  Michał Bajkos
 //              Linux CPU Usage tracker 
-//              Project Learning and reading time:  4h
-//              Project Coding Time:                30min.
+//              Project Learning and reading time:  8h
+//              Project Coding Time:                6h.
 //----------------------------------------------------
     
 #include <unistd.h>     /* Symbolic Constants */
@@ -12,16 +12,30 @@
 #include <stdlib.h>     /* General Utilities */
 #include <pthread.h>    /* POSIX Threads */
 #include <string.h>     /* String handling */
-     
+
+    
  
 #define _BUFOR_SIZE         1024
 #define _OFFEST_ANSWER_CORE 100
 
 typedef struct {
-    int core_count;
-    int cpu_core[_BUFOR_SIZE];
+    int  core_count;
+    char cpu_core[_BUFOR_SIZE];
+    char value[10];
 
 }struktura;
+
+
+void *Reader(void *a){}
+
+void *Analyzer(void *a){}
+
+void *Printer(void *a){}
+
+void *Watchdog(void *a){}
+
+void *Logger(void *a){}
+
 
 
 int main(int argc, char *argv[])
@@ -31,10 +45,10 @@ int main(int argc, char *argv[])
     char data[_BUFOR_SIZE];                             /* Create data bufor */
     FILE *STAT = fopen("/proc/stat" ,"r");              /* Create File pointer with command to read file /proc/stat*/
     FILE *NMBR_CORES_N = fopen("/proc/cpuinfo" ,"r");   /* Create File pointer with command to read how many cores system have */
-    
    
-
-
+    
+    long int try[20];
+    char quick_buf[200];
 
 
 int j=0;
@@ -49,33 +63,44 @@ int j=0;
         j++;
     }
 
-   
+
 int i=0;
     while( fgets(data,1024,STAT) != NULL)             
-    { 
-        for(int j=0; j<100; j++)
+    {
+        if(i <= sData.core_count ) 
         {
-
-                if(sData.cpu_core >= 0) sData.cpu_core[j + _OFFEST_ANSWER_CORE * i]  = (data[j+5] - '0');    /* Read data and convert to int */
-                
-    
+            for(int j=0; j<100; j++)
+            {   
+               sData.cpu_core[j + _OFFEST_ANSWER_CORE * i]  = data[j+5];    /* Read data and convert to int */
+            }
         }
+        else    break; 
         i++;
     }
 
 
-j=0;
-    for(int z=0; z<sData.core_count; z++)       /* DEBUG PRINT */
+int static nbr_to_space, nbr_loop;
+char static bufer[200];
+while(1)
+{
+    if(nbr_loop == 20)  break;
+    for(i=0; i<100; i++)
     {
-        printf("\n Core : ");
-        for(int t=0; t<100; t++)
-        {
-            if(sData.cpu_core[t+j] >= 0)    printf("%d",sData.cpu_core[t+j]);
-            else                            printf(" ");
-        }
-    j+=100;
-          
+        bufer[i] = sData.cpu_core[i+nbr_to_space];
+        if(sData.cpu_core[i] != ' ')  continue;
+        else                nbr_to_space=nbr_to_space+i; break;
     }
-                                 
+    strcat(quick_buf+nbr_to_space, bufer);
+    try[nbr_loop] = atoi(bufer); 
+    memset(bufer,0,200);
+    nbr_loop++;
+}
+
+printf( " %ld \n", try[0]);
+printf( " %ld \n", try[1]);
+printf( " %ld \n", try[2]);
     return 0;
 }
+
+
+
