@@ -15,16 +15,24 @@
 
     
  
-#define _BUFOR_SIZE         1024
-#define _OFFEST_ANSWER_CORE 100
+#define BUFOR_SIZE         1024
+#define OFFEST_DATA        100
+#define STAT_FIELDS        10
+
+
 
 typedef struct {
     int  core_count;
-    char cpu_core[_BUFOR_SIZE];
-    char value[10];
+    char cpu_core[BUFOR_SIZE];
 
-}struktura;
 
+}dataStruct;
+
+dataStruct sData;
+dataStruct *pData;
+
+
+char data[BUFOR_SIZE];                             /* Create data char bufor */
 
 void *Reader(void *a){}
 
@@ -37,68 +45,85 @@ void *Watchdog(void *a){}
 void *Logger(void *a){}
 
 
-
-int main(int argc, char *argv[])
+void getCoreNumer(dataStruct  *context)
 {
-    struktura sData;
-    struktura *poi_sDane;
-    char data[_BUFOR_SIZE];                             /* Create data bufor */
-    FILE *STAT = fopen("/proc/stat" ,"r");              /* Create File pointer with command to read file /proc/stat*/
     FILE *NMBR_CORES_N = fopen("/proc/cpuinfo" ,"r");   /* Create File pointer with command to read how many cores system have */
-   
+
     
-    long int try[20];
-    char quick_buf[200];
-
-
-int j=0;
+    int j=0;
     while( fgets(data,1024,NMBR_CORES_N)  != NULL )             
     {
         if(j == 11)
         {
-            sData.core_count = ( data[12] - '0');       /* Convert char to int */
-            if(!sData.core_count)    puts("Error core count");
+            context->core_count = ( data[12] - '0');       /* Convert char to int */
+            if(!context->core_count)    puts("Error core count");
             break;
         }
         j++;
     }
+}
 
 
-int i=0;
+
+int main(int argc, char *argv[])
+{
+    
+getCoreNumer(&sData);   /* Read how many cores system have */
+
+
+FILE *STAT = fopen("/proc/stat" ,"r");  /* Create File pointer with command to read file /proc/stat*/
+int nbr_lopp_convert=0;                 /* Variable responsible for read 10 number of rows_data data from terminal */
+int static id_Empty=0;
+char static bufer[200];                 /* Bufer to concencrate data char array -> int long */
+int rows_data=0;                        /* variable describe number of row data from terminal */
+
+
+
+
+ long int Datebase[sData.core_count][STAT_FIELDS];
+
     while( fgets(data,1024,STAT) != NULL)             
     {
-        if(i <= sData.core_count ) 
+        if(rows_data < sData.core_count ) 
         {
+            nbr_lopp_convert=0;
+            id_Empty=0;
             for(int j=0; j<100; j++)
             {   
-               sData.cpu_core[j + _OFFEST_ANSWER_CORE * i]  = data[j+5];    /* Read data and convert to int */
+               sData.cpu_core[j]  = data[j+5];    /* Read data and convert to int */
+            }
+            while(1)
+            {
+                if(nbr_lopp_convert == 10)  break;
+                for(int i=0; i<BUFOR_SIZE; i++)
+                {
+                    bufer[i] = sData.cpu_core[i+id_Empty]; 
+                    if(sData.cpu_core[i+id_Empty] != ' ')   continue;   /* If data from buffor is empty -> new data */
+                    else  id_Empty=id_Empty+i+1; break;
+                    
+                }
+
+                Datebase[rows_data][nbr_lopp_convert] = atoi(bufer); 
+                memset(bufer,0,200);
+                nbr_lopp_convert++;
             }
         }
         else    break; 
-        i++;
+        rows_data++;
     }
 
-
-int static nbr_to_space, nbr_loop;
-char static bufer[200];
-while(1)
+/* DEBUG PRINT */
+for(int k=0; k<sData.core_count; k++)
 {
-    if(nbr_loop == 20)  break;
-    for(i=0; i<100; i++)
+    printf(" core nbr: %d \n", k);
+    for(int j=0; j<10; j++)
     {
-        bufer[i] = sData.cpu_core[i+nbr_to_space];
-        if(sData.cpu_core[i] != ' ')  continue;
-        else                nbr_to_space=nbr_to_space+i; break;
-    }
-    strcat(quick_buf+nbr_to_space, bufer);
-    try[nbr_loop] = atoi(bufer); 
-    memset(bufer,0,200);
-    nbr_loop++;
-}
 
-printf( " %ld \n", try[0]);
-printf( " %ld \n", try[1]);
-printf( " %ld \n", try[2]);
+        printf(" %ld \n", Datebase[k][j]);
+
+    }
+    printf("\n ");
+}
     return 0;
 }
 
