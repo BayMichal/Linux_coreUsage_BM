@@ -21,4 +21,6 @@ pthread.h
 -
 string.h
 -
+semaphore.h
+-
 
