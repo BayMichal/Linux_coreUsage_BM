@@ -23,6 +23,12 @@ string.h
 -
 semaphore.h
 -
-time.h
+fcntl.h
+-
+sys/ioctl.h
+-
+linux/watchdog.h
+-
+signal.h
 -
 
