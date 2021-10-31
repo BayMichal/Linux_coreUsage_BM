@@ -31,4 +31,10 @@ linux/watchdog.h
 -
 signal.h
 -
+limits.h
+-
+sys/stat.h
+-
+assert.h
+-
 

@@ -18,7 +18,10 @@
 #include <sys/ioctl.h>  /* Watchdog */
 #include <linux/watchdog.h>/* Typedef for wdt */
 #include <signal.h>     /* Sigterm */
-    
+
+#include <limits.h>     /* queque */
+#include <sys/stat.h>
+#include <assert.h>
  
 #define BUFOR_SIZE         1024
 #define DATA_SIZE          100
@@ -38,63 +41,171 @@
 #define F_Q_NICE            9   /* Quest Nice   */
 #define STAT_FIELDS         (F_USER + F_Q_NICE) /* 10 Stat Fields */
 #define WATCHDOG_TIMEOUT    120
+#define RING_BUFFER_SIZE    1024
 
 
+/**Typedef struct to get and prepare data to print thread
+ * 
+ */
 typedef struct {
-    unsigned int  core_count;
-    char cpu_core[BUFOR_SIZE];
-    unsigned long long int Datebase[MAX_CORES][STAT_FIELDS];
-    unsigned long long int prev_Datebase[MAX_CORES][STAT_FIELDS];
+    unsigned int  core_count;                                       /*Count of cores system have */
+    char cpu_core[BUFOR_SIZE];                                      /* Char buffer to get data from file */
+    unsigned long long int Datebase[MAX_CORES][STAT_FIELDS];        /* Datebase with converted and analyzed values */
+    unsigned long long int prev_Datebase[MAX_CORES][STAT_FIELDS];   /* Datebase with previos step analyzed values */
     double CPU_Percentage[MAX_CORES];
     
 }dataStruct;
 
+/**Typedef struct with data to analyze CPU usage
+ * 
+ */
 typedef struct{
-    unsigned long long int Idle;
+    unsigned long long int Idle;    
     unsigned long long int NonIdle;
     unsigned long long int Total;
 }fieldStruct;
 
+/**Typedef struct with data to analyze CPU usage. 
+ * 
+ */
 typedef struct{
     unsigned long long int previdle;
     unsigned long long int prevNonIdle;
     unsigned long long int prevTotal;
 }prev_fieldStruct;
 
+/**Typedef struct to wachdog thread
+ * 
+ */
 typedef struct{
-    unsigned char wdt_Reader;
-    unsigned char wdt_Analyzer;
-    unsigned char wdt_Printer;
-    unsigned char wdt_Logger;
+    unsigned char wdt_Reader;   /* Flag drom Reader thread */
+    unsigned char wdt_Analyzer; /* Flag from Analyzer thread */
+    unsigned char wdt_Printer;  /* Flag from Printer thread */
+    unsigned char wdt_Logger;   /* Flag from Logger thread */
 }wdt_data;
+
 
 dataStruct sData;
 fieldStruct sFieldData;
 prev_fieldStruct prev_sFieldData;
-wdt_data wdt_sFlags;
+wdt_data wdt_sFlags;    
+sem_t IsEmpty;          /* Bufor is empty, ready to read data */
+sem_t IsFull;           /* Bufor is full, ready to print */
+sem_t IsReady;          /* Bufor is print, ready to get empty */
+sem_t circle_empty;     /* Circle bufor is empty */
+sem_t circle_Full;      /* Circle buffer is full, now logger can work */
 
-sem_t IsEmpty;  //Bufor is empty, ready to read data.
-sem_t IsFull;   //Bufor is full, ready to print.
-sem_t IsReady;  //Bufor is print, ready to get empty.
-
-char data[BUFOR_SIZE];                             /* Create data char bufor */
-
+char data[BUFOR_SIZE];   /* Create data char bufor */
 volatile sig_atomic_t done = 0;
 
+/** Sigterm set Sigflag function 
+ *  
+ * @sigum Handler
+ */
 void term(int signum){
     done = 1;
 }
 
 
+/** Enum state for circle buffer
+ * 
+ * 
+ */
+typedef enum
+{
+	RB_OK       = 0,    /* Enum state True */
+	RB_ERROR	= 1     /* Enum state Error*/
+} RB_Status;
+ 
+/** Global struct of circle buffer
+ * 
+ * 
+ */
+typedef struct
+{
+	int Head; // Pointer to write
+	int Tail; // Pointer to read
+	char Buffer[RING_BUFFER_SIZE]; // Array to store data
+} RingBuffer_t;
+
+RingBuffer_t test; 
+ 
+
+/** Read from Ring Buffer
+*
+* @param *Buf - pointer to Ring Buffer structure
+* @param *Value - pointer to place where a value from buffer is read
+*/
+RB_Status RB_Read(RingBuffer_t *Buf, char *Value)
+{
+	/* Check if Tail hit Head */
+	if(Buf->Head == Buf->Tail)
+	{
+		// If yes - there is nothing to read */
+		return RB_ERROR;
+	}
+ 
+	/* Write current value from buffer to pointer from argument */
+	*Value = Buf->Buffer[Buf->Tail];
+ 
+	/* Calculate new Tail pointer */
+	Buf->Tail = (Buf->Tail + 1) % RING_BUFFER_SIZE;
+ 
+	/* Everything is ok - return OK status */
+	return RB_OK;
+}
+ 
+
+/** Write to Ring Buffer
+ *
+ * @param  *Buf - pointer to Ring Buffer structure
+ * @param Value - a value to store in the buffer
+ */
+RB_Status RB_Write(RingBuffer_t *Buf, char Value)
+{
+	/* Calculate new Head pointer value */
+	int HeadTmp = (Buf->Head + 1) % RING_BUFFER_SIZE;
+ 
+	/* Check if there is one free space ahead the Head buffer */
+	if(HeadTmp == Buf->Tail)
+	{
+		/* There is no space in the buffer - return an error */
+		return RB_ERROR;
+	}
+ 
+	/* Store a value into the buffer */
+	Buf->Buffer[Buf->Head] = Value;
+ 
+	/* Remember a new Head pointer value */
+	Buf->Head = HeadTmp;
+ 
+	/* Everything is ok - return OK status */
+	return RB_OK;
+}
+ 
+/** Free whole circle buffer
+ * 
+ * @param *Buf Pointer to Ring Buffer structure
+ */
+void RB_Flush(RingBuffer_t *Buf)
+{
+	
+	Buf->Head = 0;  //Reset Head
+	Buf->Tail = 0;  //Reset Tail
+}
+
+/** Function read how many cores system have.
+ * 
+ * @param *context - pointer to global datastruct. 
+ */
 void getCoreNumer(dataStruct  *context)
 {
-    //puts(" JESTEM W ODCZYTYWANIU CORE \n ");
     FILE *NMBR_CORES_N = fopen("/proc/cpuinfo" ,"r");   /* Create File pointer with command to read how many cores system have */
     int j = 0;
     while( fgets(data, BUFOR_SIZE, NMBR_CORES_N)  != NULL )             
     {
         if (j == 11){
-            context->core_count = ( data[ID_NBR_CORE] - '0');       /* Convert char to int */
+            context->core_count = ( data[ID_NBR_CORE] - '0');       /* Convert coure count from char to int */
             if(!context->core_count){
                 puts("Error core count");
             }    
@@ -102,13 +213,25 @@ void getCoreNumer(dataStruct  *context)
         }
         j++;
     }
+
+    sem_post(&IsEmpty);
 }
-
-
+/** Function which use thread t_Reader
+ * 
+ * 
+ */
 void *f_reader(void *a)
 {
     while(!done){
-    sem_wait(&IsEmpty);                      /* Task block */
+    sem_wait(&IsEmpty);                      /* Thread block */
+    sem_wait(&circle_empty);
+    const char log_buf[16] = "Reader_";
+
+    for(int x = 0; x < 7; x++){
+        RB_Write(&test,log_buf[x]);
+    }
+    sem_post(&circle_Full);
+    
         //  printf(" JESTEM W READER  \n ");    
         int rows_data = 0;                        /* variable describe number of row data from terminal */
         int nbr_lopp_convert = 0; 
@@ -139,96 +262,141 @@ void *f_reader(void *a)
     return NULL;
 }
 
+/** Function which use thread t_Analyzer
+ * 
+ * 
+ */
 void *f_analiz(void *a)
 {
     while(!done){
-    sem_wait(&IsFull);                      /* Task block */
-        //puts(" JESTEM W ANALIZ\n ");
-        int nbr_lopp_convert = 0;                 
-        int static id_Empty = 0;
-        int offset = 0;
-        char static bufer[200];                 /* Bufer to concencrate data char array -> int long */
+        /* Wait for guards */
+        sem_wait(&IsFull);                      
+        sem_wait(&circle_empty);
 
-        for(int x = 0; x < sData.core_count; x++)
-        {
-            offset = 100*x;
-            nbr_lopp_convert = 0;
-            id_Empty = 0;
-        
-            while(1)
+        /* Log procedure */
+        const char log_buf[10] = "Analyzer";
+
+        for(int x = 0; x < 7; x++){
+            RB_Write(&test,log_buf[x]);
+        }
+        sem_post(&circle_Full);
+
+            int nbr_lopp_convert = 0;   /*  Local var to increment fields of data */               
+            int static id_Empty = 0;    /* Index of buffer which first empty char */
+            int offset = 0;             /* Offset to global buffer */
+            char static bufer[200];     /* Bufer to concencrate data char array -> int long */
+
+            
+            for(int x = 0; x < sData.core_count; x++)   /* Convert char buffer to Datebase[how many cores][ filds of data stat] */
             {
-                if(nbr_lopp_convert == 10)  {
-                    break;
-                }
-                for(int i = 0; i < 100; i++)
+                offset = 100*x;
+                nbr_lopp_convert = 0;
+                id_Empty = 0;
+            
+                while(1)
                 {
-                    bufer[i] = sData.cpu_core[i+id_Empty+offset]; 
-                    if(sData.cpu_core[i+id_Empty+offset] != ' ')   continue;  /* If data from buffor is empty -> new data */
-                    else  id_Empty=id_Empty+i+1; break;
-                }
-                sData.Datebase[x][nbr_lopp_convert] = atoi(bufer); 
-                memset(bufer,0,200);
-                nbr_lopp_convert++;
-            }   
-        }
+                    if(nbr_lopp_convert == 10)  {
+                        break;
+                    }
+                    for(int i = 0; i < 100; i++)
+                    {
+                        bufer[i] = sData.cpu_core[i+id_Empty+offset]; 
+                        if(sData.cpu_core[i+id_Empty+offset] != ' ')   continue;  /* If data from buffor is empty -> new data */
+                        else  id_Empty=id_Empty+i+1; break;
+                    }
+                    sData.Datebase[x][nbr_lopp_convert] = atoi(bufer); 
+                    memset(bufer,0,200);
+                    nbr_lopp_convert++;
+                }   
+            }
 
-        //----------------------Algorytm-------------------
-        unsigned long long int totald;
-        unsigned long long int idled;
+            /* Algorithm */
+            unsigned long long int totald;
+            unsigned long long int idled;
 
-        for(int cnt_core = 0; cnt_core < sData.core_count; cnt_core++)
-        {
-            prev_sFieldData.previdle = sData.prev_Datebase[cnt_core][F_IDLE] + sData.prev_Datebase[cnt_core][F_IOWR];
-            sFieldData.Idle = sData.Datebase[cnt_core][F_IDLE] + sData.Datebase[cnt_core][F_IOWR];
+            for(int cnt_core = 0; cnt_core < sData.core_count; cnt_core++)
+            {
+                prev_sFieldData.previdle = sData.prev_Datebase[cnt_core][F_IDLE] + sData.prev_Datebase[cnt_core][F_IOWR];
+                sFieldData.Idle = sData.Datebase[cnt_core][F_IDLE] + sData.Datebase[cnt_core][F_IOWR];
 
-            prev_sFieldData.prevNonIdle = sData.prev_Datebase[cnt_core][F_USER] + sData.prev_Datebase[cnt_core][F_NICE] + sData.prev_Datebase[cnt_core][F_SYST] + sData.prev_Datebase[cnt_core][F_IRQ] + sData.prev_Datebase[cnt_core][F_SIRQ] + sData.prev_Datebase[cnt_core][F_STEAL];
-            sFieldData.NonIdle = sData.Datebase[cnt_core][F_USER] + sData.Datebase[cnt_core][F_NICE] + sData.Datebase[cnt_core][F_SYST] + sData.Datebase[cnt_core][F_IRQ] + sData.Datebase[cnt_core][F_SIRQ] + sData.Datebase[cnt_core][F_STEAL];
-            
-            prev_sFieldData.prevTotal = prev_sFieldData.previdle+ prev_sFieldData.prevNonIdle;
-            sFieldData.Total = sFieldData.Idle + sFieldData.NonIdle;
-            
-            totald = sFieldData.Total - prev_sFieldData.prevTotal;
-            idled = sFieldData.Idle - prev_sFieldData.previdle;
+                prev_sFieldData.prevNonIdle = sData.prev_Datebase[cnt_core][F_USER] + sData.prev_Datebase[cnt_core][F_NICE] + sData.prev_Datebase[cnt_core][F_SYST] + sData.prev_Datebase[cnt_core][F_IRQ] + sData.prev_Datebase[cnt_core][F_SIRQ] + sData.prev_Datebase[cnt_core][F_STEAL];
+                sFieldData.NonIdle = sData.Datebase[cnt_core][F_USER] + sData.Datebase[cnt_core][F_NICE] + sData.Datebase[cnt_core][F_SYST] + sData.Datebase[cnt_core][F_IRQ] + sData.Datebase[cnt_core][F_SIRQ] + sData.Datebase[cnt_core][F_STEAL];
+                
+                prev_sFieldData.prevTotal = prev_sFieldData.previdle+ prev_sFieldData.prevNonIdle;
+                sFieldData.Total = sFieldData.Idle + sFieldData.NonIdle;
+                
+                totald = sFieldData.Total - prev_sFieldData.prevTotal;
+                idled = sFieldData.Idle - prev_sFieldData.previdle;
 
-            sData.CPU_Percentage[cnt_core] = ((((double)totald - (double)idled) / (double)totald) * 100);
-        }
-        //printf(" ZWALNIAM TASKA ANALIZA\n");
-    wdt_sFlags.wdt_Analyzer = 1;
-    sem_post(&IsReady);
+                sData.CPU_Percentage[cnt_core] = ((((double)totald - (double)idled) / (double)totald) * 100);
+            }
+        wdt_sFlags.wdt_Analyzer = 1;
+
+        /* Set semaphore */
+        sem_post(&IsReady);
     }
     return NULL;
 
 }
 
+/** Function which use thread t_Printer
+ * 
+ * 
+ */
 void *f_print(void *a)
 {
     while(!done){
-    sem_wait(&IsReady);
+        /* Wait for guards */
+        sem_wait(&IsReady);
+        sem_wait(&circle_empty);
+
+        /* Circle procedure */
+        const char log_buf[10] = "Printer";
+
+        for(int x = 0; x < 7; x++){
+            RB_Write(&test,log_buf[x]);
+        }
+        sem_post(&circle_Full);
+
         sleep(1);
-        // puts(" JESTEM W PRINT\n ");
         puts("\n");
         for(int k = 0; k < sData.core_count; k++)
         {
             printf(" Zuzycie rdzenia nr: %d wynosi: %f %% \n", k, sData.CPU_Percentage[k]);
         }
 
-        /* SET 0 */
+        /* Prepare previos buffer for next step */
         memset(sData.prev_Datebase, 0 , sizeof(sData.prev_Datebase));
 
-        /* SAVE DATA TO PREV DATA TO NEXT USE ALGORITHM */
+        /* Save data to previos buffer for next use */
         memcpy(sData.prev_Datebase, sData.Datebase, sizeof(sData.Datebase));
         memset(sData.cpu_core, 0, sizeof(sData.cpu_core));
-    wdt_sFlags.wdt_Printer = 1;
-    sem_post(&IsEmpty);
+        wdt_sFlags.wdt_Printer = 1;
+
+        /* Set semaphore */
+        sem_post(&IsEmpty);
     }
     return NULL;
 }
 
+/* SOFTDOG HARDWAREA WATCHDOG *in development*
+ *
+ *
+ */
 void *f_watchdog(void *a)
 {
     int fd, ret;
     int timeout = 0;
     static int Wdt_Complete_Init = 0;
+
+    sem_wait(&circle_empty);
+    const char log_buf[10] = "Softdog";
+
+    for(int x = 0; x < 7; x++){
+        RB_Write(&test,log_buf[x]);
+    }
+    sem_post(&circle_Full);
+
 
     fd = open("/dev/watchdog", O_RDWR);             /* Open watchdog */
     if(fd < 0){
@@ -285,53 +453,98 @@ void *f_watchdog(void *a)
     return NULL;
 }
 
+/** Function which use thread t_logger
+ * 
+ * 
+ */
 void *f_logger(void *a)
 {
-    while(!done)
-    {
-    // puts(" JESTEM W LOGGER\n ");
+    char buf_ans[8];
+    FILE *fp;
+    while(!done){
+        /* Guard of buffer */
+        sem_wait(&circle_Full);
+            
+        /* Get timestamp for file */
+        time_t t = time(NULL);
+        struct tm *tm = localtime(&t);
+        char s[70];
+        assert(strftime(s, sizeof(s), "%c", tm));
 
-    wdt_sFlags.wdt_Logger = 1;
+        /* READ FROM CIRCLE BUFFER */
+        for(int z=0; z< 7; z++){
+            RB_Read(&test, &buf_ans[z]);
+        }
+
+        /* Save file */
+        if ((fp=fopen("LOGS.txt", "a"))==NULL) {
+            printf ("Nie mogę otworzyć pliku test.txt do zapisu!\n");
+            }
+        else{
+            fprintf(fp, "%s", buf_ans);    //Which Tread
+            fprintf(fp, "%s ", " ");        // space
+            fprintf(fp, "%s \n", s);        // Timestamp
+            fclose (fp); 
+        }
+        
+        /* Prepare for next Log */
+        memset(buf_ans,0,sizeof(buf_ans));
+
+        /* Set Empty semaphore guard */
+        sem_post(&circle_empty);
+        //wdt_sFlags.wdt_Logger = 1;
     }
-   
     return NULL;
 }
 
 
 
 
+
 int main(int argc, char *argv[])
 {
+    /* SIGTERM */
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = term;
     if( sigaction(SIGTERM, &action, NULL) == -1)    printf(" Nie mozna utworzyć SIGTERM ");
 
-    getCoreNumer(&sData);   /* Read how many cores system have */
+    /* SEMAPHORES */
     sem_init(&IsEmpty, 0, 1);
     sem_init(&IsFull, 0, 0);
-    sem_init(&IsReady, 0, 0);
+    sem_init(&IsReady, 0, 0); 
+    sem_init(&circle_empty,0,1);
+    sem_init(&circle_Full,0,0);
+ 
 
+    /* CIRCLE BUFFER INIT */
+    RB_Flush(&test);
+
+    /* THREADS INIT */
     pthread_t t_Reader,t_Analyzer,t_Printer,t_Watchdog,t_Logger,t_;
-    
 
+    /* Read how many cores system have */
+    getCoreNumer(&sData);   
+
+    /* THREADS CREATE */
     if( pthread_create(&t_Reader, NULL, f_reader, NULL) == -1)      printf(" Nie mozna utworzyć wątku");
     if( pthread_create(&t_Analyzer, NULL, f_analiz, NULL) == -1)    printf(" Nie mozna utworzyć wątku");
     if( pthread_create(&t_Printer, NULL, f_print, NULL) == -1)      printf(" Nie mozna utworzyć wątku");
     //if( pthread_create(&t_Watchdog, NULL, f_watchdog, NULL) == -1)  printf(" Nie mozna utworzyć wątku");
     if( pthread_create(&t_Logger, NULL, f_logger, NULL) == -1)      printf(" Nie mozna utworzyć wątku");
+     
 
-
-    void *result;
+    /* THREADS EXIT */
+     void *result;
     if(pthread_join(t_Reader, &result) == -1)   printf("Blad oczekiwania na zakonczenie watku tReader");
     if(pthread_join(t_Analyzer, &result) == -1) printf("Blad oczekiwania na zakonczenie watku t_Analyzer");
     if(pthread_join(t_Printer, &result) == -1)  printf("Blad oczekiwania na zakonczenie watku t_Printer");
-
-
     //if(pthread_join(t_Watchdog, &result) == -1) printf("Blad oczekiwania na zakonczenie watku t_Watchdog");
-
     if(pthread_join(t_Logger, &result) == -1)   printf("Blad oczekiwania na zakonczenie watku t_Logger");
-    printf("done");
+
+    /* IF PROGRAM ENDS DEBUG PRINT */
+    printf("Work is done \n");
+
 return 0;
 }
 
