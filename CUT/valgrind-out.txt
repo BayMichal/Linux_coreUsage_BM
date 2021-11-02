@@ -1,0 +1,124 @@
+==10380== Memcheck, a memory error detector
+==10380== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==10380== Using Valgrind-3.17.0 and LibVEX; rerun with -h for copyright info
+==10380== Command: ./main
+==10380== Parent PID: 9538
+==10380== 
+==10380== Thread 6:
+==10380== Conditional jump or move depends on uninitialised value(s)
+==10380==    at 0x4849CC8: __strlen_sse2 (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x48E8AA8: fputs (iofputs.c:33)
+==10380==    by 0x10A45C: f_logger (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380==    by 0x48FD926: start_thread (pthread_create.c:435)
+==10380==    by 0x498D9E3: clone (clone.S:100)
+==10380==  Uninitialised value was created by a stack allocation
+==10380==    at 0x10A341: f_logger (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 
+==10380== Process terminating with default action of signal 2 (SIGINT)
+==10380==    at 0x497C9ED: __libc_write (write.c:26)
+==10380==    by 0x497C9ED: write (write.c:24)
+==10380==    by 0x48F3E6C: _IO_file_write@@GLIBC_2.2.5 (fileops.c:1181)
+==10380==    by 0x48F5970: new_do_write (fileops.c:449)
+==10380==    by 0x48F5970: _IO_new_do_write (fileops.c:426)
+==10380==    by 0x48F5970: _IO_do_write@@GLIBC_2.2.5 (fileops.c:423)
+==10380==    by 0x48F4F67: _IO_file_close_it@@GLIBC_2.2.5 (fileops.c:136)
+==10380==    by 0x48E7E0E: fclose@@GLIBC_2.2.5 (iofclose.c:53)
+==10380==    by 0x10A4A9: f_logger (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380==    by 0x48FD926: start_thread (pthread_create.c:435)
+==10380==    by 0x498D9E3: clone (clone.S:100)
+==10380== 
+==10380== HEAP SUMMARY:
+==10380==     in use at exit: 17,728 bytes in 32 blocks
+==10380==   total heap usage: 143,771 allocs, 143,739 frees, 219,580,966 bytes allocated
+==10380== 
+==10380== Thread 1:
+==10380== 272 bytes in 1 blocks are possibly lost in loss record 1 of 9
+==10380==    at 0x4848A23: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x4014CAB: calloc (rtld-malloc.h:44)
+==10380==    by 0x4014CAB: allocate_dtv (dl-tls.c:375)
+==10380==    by 0x4014CAB: _dl_allocate_tls (dl-tls.c:623)
+==10380==    by 0x48FE5D9: allocate_stack (allocatestack.c:431)
+==10380==    by 0x48FE5D9: pthread_create@@GLIBC_2.34 (pthread_create.c:623)
+==10380==    by 0x10A6B2: main (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 272 bytes in 1 blocks are possibly lost in loss record 2 of 9
+==10380==    at 0x4848A23: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x4014CAB: calloc (rtld-malloc.h:44)
+==10380==    by 0x4014CAB: allocate_dtv (dl-tls.c:375)
+==10380==    by 0x4014CAB: _dl_allocate_tls (dl-tls.c:623)
+==10380==    by 0x48FE5D9: allocate_stack (allocatestack.c:431)
+==10380==    by 0x48FE5D9: pthread_create@@GLIBC_2.34 (pthread_create.c:623)
+==10380==    by 0x10A6EB: main (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 272 bytes in 1 blocks are possibly lost in loss record 3 of 9
+==10380==    at 0x4848A23: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x4014CAB: calloc (rtld-malloc.h:44)
+==10380==    by 0x4014CAB: allocate_dtv (dl-tls.c:375)
+==10380==    by 0x4014CAB: _dl_allocate_tls (dl-tls.c:623)
+==10380==    by 0x48FE5D9: allocate_stack (allocatestack.c:431)
+==10380==    by 0x48FE5D9: pthread_create@@GLIBC_2.34 (pthread_create.c:623)
+==10380==    by 0x10A724: main (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 272 bytes in 1 blocks are possibly lost in loss record 4 of 9
+==10380==    at 0x4848A23: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x4014CAB: calloc (rtld-malloc.h:44)
+==10380==    by 0x4014CAB: allocate_dtv (dl-tls.c:375)
+==10380==    by 0x4014CAB: _dl_allocate_tls (dl-tls.c:623)
+==10380==    by 0x48FE5D9: allocate_stack (allocatestack.c:431)
+==10380==    by 0x48FE5D9: pthread_create@@GLIBC_2.34 (pthread_create.c:623)
+==10380==    by 0x10A75D: main (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 272 bytes in 1 blocks are possibly lost in loss record 5 of 9
+==10380==    at 0x4848A23: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x4014CAB: calloc (rtld-malloc.h:44)
+==10380==    by 0x4014CAB: allocate_dtv (dl-tls.c:375)
+==10380==    by 0x4014CAB: _dl_allocate_tls (dl-tls.c:623)
+==10380==    by 0x48FE5D9: allocate_stack (allocatestack.c:431)
+==10380==    by 0x48FE5D9: pthread_create@@GLIBC_2.34 (pthread_create.c:623)
+==10380==    by 0x10A796: main (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 472 bytes in 1 blocks are still reachable in loss record 6 of 9
+==10380==    at 0x4843839: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x48E86DD: __fopen_internal (iofopen.c:65)
+==10380==    by 0x48E86DD: fopen@@GLIBC_2.2.5 (iofopen.c:86)
+==10380==    by 0x1095FD: getCoreNumer (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380==    by 0x10A692: main (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380== 
+==10380== 472 bytes in 1 blocks are still reachable in loss record 7 of 9
+==10380==    at 0x4843839: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x48E86DD: __fopen_internal (iofopen.c:65)
+==10380==    by 0x48E86DD: fopen@@GLIBC_2.2.5 (iofopen.c:86)
+==10380==    by 0x10A42D: f_logger (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380==    by 0x48FD926: start_thread (pthread_create.c:435)
+==10380==    by 0x498D9E3: clone (clone.S:100)
+==10380== 
+==10380== 4,096 bytes in 1 blocks are still reachable in loss record 8 of 9
+==10380==    at 0x4843839: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x48E7C23: _IO_file_doallocate (filedoalloc.c:101)
+==10380==    by 0x48F6C6F: _IO_doallocbuf (genops.c:347)
+==10380==    by 0x48F5EFF: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+==10380==    by 0x48F4694: _IO_new_file_xsputn (fileops.c:1244)
+==10380==    by 0x48F4694: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+==10380==    by 0x48E8B2C: fputs (iofputs.c:38)
+==10380==    by 0x10A45C: f_logger (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380==    by 0x48FD926: start_thread (pthread_create.c:435)
+==10380==    by 0x498D9E3: clone (clone.S:100)
+==10380== 
+==10380== 11,328 bytes in 24 blocks are still reachable in loss record 9 of 9
+==10380==    at 0x4843839: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10380==    by 0x48E86DD: __fopen_internal (iofopen.c:65)
+==10380==    by 0x48E86DD: fopen@@GLIBC_2.2.5 (iofopen.c:86)
+==10380==    by 0x109745: f_reader (in /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main)
+==10380==    by 0x48FD926: start_thread (pthread_create.c:435)
+==10380==    by 0x498D9E3: clone (clone.S:100)
+==10380== 
+==10380== LEAK SUMMARY:
+==10380==    definitely lost: 0 bytes in 0 blocks
+==10380==    indirectly lost: 0 bytes in 0 blocks
+==10380==      possibly lost: 1,360 bytes in 5 blocks
+==10380==    still reachable: 16,368 bytes in 27 blocks
+==10380==         suppressed: 0 bytes in 0 blocks
+==10380== 
+==10380== For lists of detected and suppressed errors, rerun with: -s
+==10380== ERROR SUMMARY: 6 errors from 6 contexts (suppressed: 0 from 0)
