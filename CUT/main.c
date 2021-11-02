@@ -45,15 +45,16 @@
 #define RING_BUFFER_SIZE    1024
 
 
+
 /**Typedef struct to get and prepare data to print thread
  * 
  */
 typedef struct {
     unsigned int  core_count;                                       /*Count of cores system have */
     char cpu_core[BUFOR_SIZE];                                      /* Char buffer to get data from file */
-    unsigned long long int Datebase[MAX_CORES][STAT_FIELDS];        /* Datebase with converted and analyzed values */
-    unsigned long long int prev_Datebase[MAX_CORES][STAT_FIELDS];   /* Datebase with previos step analyzed values */
-    double CPU_Percentage[MAX_CORES];
+    unsigned long long int Datebase[MAX_CORES][STAT_FIELDS]__attribute__ ((packed));        /* Datebase with converted and analyzed values */
+    unsigned long long int prev_Datebase[MAX_CORES][STAT_FIELDS]__attribute__ ((packed)) ;  /* Datebase with previos step analyzed values */
+    double CPU_Percentage[MAX_CORES]__attribute__ ((packed));
     
 }dataStruct;
 
@@ -85,31 +86,6 @@ typedef struct{
     unsigned char wdt_Logger;   /* Flag from Logger thread */
 }wdt_data;
 
-
-static dataStruct sData;
-static fieldStruct sFieldData;
-static prev_fieldStruct prev_sFieldData;
-static wdt_data wdt_sFlags;    
-static sem_t IsEmpty;          /* Bufor is empty, ready to read data */
-static sem_t IsFull;           /* Bufor is full, ready to print */
-static sem_t IsReady;          /* Bufor is print, ready to get empty */
-static sem_t circle_empty;     /* Circle bufor is empty */
-static sem_t circle_Full;      /* Circle buffer is full, now logger can work */
-
-static char data[BUFOR_SIZE];   /* Create data char bufor */
-volatile sig_atomic_t done = 0; /* Variable sigterm */
-char error_name[] = "Error threads - Watchdog";
-static int error_flag;
-
-void getCoreNumer(dataStruct  *context);
-void *f_logger(void *);
-void *f_analiz(void *);
-void *f_print(void *);
-void *f_softdog(void *);
-void *f_watchdog(void *);
-void *f_logger(void *);
-
-
 /** Enum state for circle buffer
  * 
  * 
@@ -120,6 +96,7 @@ typedef enum
 	RB_ERROR	= 1     /* Enum state Error*/
 } RB_Status;
  
+
 /** Global struct of circle buffer
  * 
  * 
@@ -132,12 +109,40 @@ typedef struct
 } RingBuffer_t;
 
 static RingBuffer_t test; 
- 
+static dataStruct sData ;
+static fieldStruct sFieldData;
+static prev_fieldStruct prev_sFieldData;
+static wdt_data wdt_sFlags;    
+static sem_t IsEmpty;          /* Bufor is empty, ready to read data */
+static sem_t IsFull;           /* Bufor is full, ready to print */
+static sem_t IsReady;          /* Bufor is print, ready to get empty */
+static sem_t circle_empty;     /* Circle bufor is empty */
+static sem_t circle_Full;      /* Circle buffer is full, now logger can work */
+
+static char data[BUFOR_SIZE];   /* Create data char bufor */
+static volatile sig_atomic_t done = 0; /* Variable sigterm */
+static char error_name[] = "Error threads - Watchdog";
+static int error_flag;
+
+
+void getCoreNumer(dataStruct  *context);
+void *f_reader(__attribute__((unused)) void *a);
+void *f_analiz(__attribute__((unused)) void *a);
+void *f_print(__attribute__((unused)) void *a);
+void *f_softdog(__attribute__((unused)) void *a);
+void *f_watchdog(__attribute__((unused)) void *a);
+void *f_logger(__attribute__((unused)) void *a);
+RB_Status RB_Read(RingBuffer_t *Buf, char *Value);
+RB_Status RB_Write(RingBuffer_t *Buf, char Value);
+void RB_Flush(RingBuffer_t *Buf);
+
+
 
 /** Read from Ring Buffer
 *
-* @param *Buf - pointer to Ring Buffer structure
-* @param *Value - pointer to place where a value from buffer is read
+* @param[in] Buf  pointer to Ring Buffer structure
+* @param[in] Value - pointer to place where a value from buffer is read
+* 
 */
 RB_Status RB_Read(RingBuffer_t *Buf, char *Value)
 {
@@ -161,8 +166,8 @@ RB_Status RB_Read(RingBuffer_t *Buf, char *Value)
 
 /** Write to Ring Buffer
  *
- * @param  *Buf - pointer to Ring Buffer structure
- * @param Value - a value to store in the buffer
+ * @param[in] Buf - pointer to Ring Buffer structure
+ * @param[in] Value - a value to store in the buffer
  */
 RB_Status RB_Write(RingBuffer_t *Buf, char Value)
 {
@@ -188,7 +193,7 @@ RB_Status RB_Write(RingBuffer_t *Buf, char Value)
  
 /** Free whole circle buffer
  * 
- * @param *Buf Pointer to Ring Buffer structure
+ * @param Buf - Pointer to Ring Buffer structure
  */
 void RB_Flush(RingBuffer_t *Buf)
 {
@@ -199,7 +204,7 @@ void RB_Flush(RingBuffer_t *Buf)
 
 /** Function read how many cores system have.
  * 
- * @param *context - pointer to global datastruct. 
+ * @param[in] context - pointer to global datastruct. 
  */
 void getCoreNumer(dataStruct  *context)
 {
@@ -208,7 +213,7 @@ void getCoreNumer(dataStruct  *context)
     while( fgets(data, BUFOR_SIZE, NMBR_CORES_N)  != NULL )             
     {
         if (j == 11){
-            context->core_count = ( data[ID_NBR_CORE] - '0');       /* Convert coure count from char to int */
+            context->core_count = ( (unsigned)data[ID_NBR_CORE] - '0');       /* Convert coure count from char to int */
             if(!context->core_count){
                 puts("Error core count");
             }    
@@ -223,7 +228,7 @@ void getCoreNumer(dataStruct  *context)
  * 
  * 
  */
-void *f_reader(void *)
+void *f_reader(__attribute__((unused))void *a)
 {
 unsigned int rows_data = 0;                        /* variable describe number of row data from terminal */
 
@@ -267,7 +272,7 @@ int i = 0;
  * 
  * 
  */
-void *f_analiz(void *)
+void *f_analiz(__attribute__((unused))void *a)
 {
 
     while(!done){
@@ -284,15 +289,15 @@ void *f_analiz(void *)
         }
         sem_post(&circle_Full);
 
-            int nbr_lopp_convert = 0;   /*  Local var to increment fields of data */               
-            static int id_Empty = 0;    /* Index of buffer which first empty char */
-            int offset = 0;             /* Offset to global buffer */
+            unsigned int nbr_lopp_convert = 0;   /*  Local var to increment fields of data */               
+            static unsigned int id_Empty = 0;    /* Index of buffer which first empty char */
+            unsigned int offset = 0;    /* Offset to global buffer */
             static char bufer[200];     /* Bufer to concencrate data char array -> int long */
 
             
             for(unsigned int x = 0; x < sData.core_count; x++)   /* Convert char buffer to Datebase[how many cores][ filds of data stat] */
             {
-                offset = 100*x;
+                offset = (100*x);
                 nbr_lopp_convert = 0;
                 id_Empty = 0;
             
@@ -301,7 +306,7 @@ void *f_analiz(void *)
                     if(nbr_lopp_convert == 10)  {
                         break;
                     }
-                    for(int i = 0; i < 100; i++)
+                    for(unsigned int i = 0; i < 100; i++)
                     {
                         bufer[i] = sData.cpu_core[i+id_Empty+offset]; 
                         if(sData.cpu_core[i+id_Empty+offset] != ' '){
@@ -312,7 +317,7 @@ void *f_analiz(void *)
                             break;
                         }
                     }
-                    sData.Datebase[x][nbr_lopp_convert] = atoi(bufer); 
+                    sData.Datebase[x][nbr_lopp_convert] = (unsigned long long)atoi(bufer); 
                     memset(bufer,0,200);
                     nbr_lopp_convert++;
                 }   
@@ -351,7 +356,7 @@ void *f_analiz(void *)
  * 
  * 
  */
-void *f_print(void *)
+void *f_print(__attribute__((unused))void *a)
 {
 
     while(!done){
@@ -396,9 +401,10 @@ void *f_print(void *)
  *
  *
  */
-void *f_softdog(void *)
+void *f_softdog(__attribute__((unused))void *a)
 {
-    int fd, ret;
+    int fd;
+    long int ret;
     int timeout = 0;
     static int Wdt_Complete_Init = 0;
 
@@ -449,7 +455,7 @@ void *f_softdog(void *)
                 if(ret != 1){
                     ret = -1;
                     //break;
-                    printf("watchdog error write  %d \n", ret);
+                    printf("watchdog error write  %ld \n", ret);
                     //close(fd);
                 }
             }
@@ -458,7 +464,7 @@ void *f_softdog(void *)
 }
 
 
-void *f_watchdog(void *){
+void *f_watchdog(__attribute__((unused))void *a){
 
 
 int timeout = 0;
@@ -505,7 +511,7 @@ time_t TimeNoResponse_end = 0;
  * 
  * 
  */
-void *f_logger(void *)
+void *f_logger(__attribute__((unused)) void *a)
 {
 
     char buf_ans[8];
@@ -569,7 +575,16 @@ int main(void)
     /* SIGTERM */
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
-    action.sa_handler = term;
+    
+    #if defined(__clang__)
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Weverything"     /* Ignore -wno-disable-macro-expansion flag in -Weverything */
+        action.sa_handler = term;
+        #pragma clang diagnostic pop
+    #else
+        action.sa_handler = term;
+    #endif
+    
     if( sigaction(SIGTERM, &action, NULL) == -1)    printf(" Nie mozna utworzyć SIGTERM ");
     signal(SIGALRM,term);
 
