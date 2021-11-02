@@ -1,5 +1,5 @@
-/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CMakeFiles/rebuild_cache.dir
-/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CMakeFiles/edit_cache.dir
-/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CUT/CMakeFiles/rebuild_cache.dir
-/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CUT/CMakeFiles/edit_cache.dir
-/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CUT/CMakeFiles/CUT.dir
+/home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CMakeFiles/rebuild_cache.dir
+/home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CMakeFiles/edit_cache.dir
+/home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CUT/CMakeFiles/rebuild_cache.dir
+/home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CUT/CMakeFiles/edit_cache.dir
+/home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CUT/CMakeFiles/CUT.dir

@@ -67,10 +67,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/michal/Pulpit/app/Linux_coreUsage_BM
+CMAKE_SOURCE_DIR = /home/michal/Pulpit/testbgg/Linux_coreUsage_BM
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/michal/Pulpit/app/Linux_coreUsage_BM/build
+CMAKE_BINARY_DIR = /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -99,14 +99,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/michal/Pulpit/app/Linux_coreUsage_BM/build/CMakeFiles /home/michal/Pulpit/app/Linux_coreUsage_BM/build/CUT//CMakeFiles/progress.marks
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/michal/Pulpit/app/Linux_coreUsage_BM/build/CMakeFiles 0
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CMakeFiles /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CUT//CMakeFiles/progress.marks
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/clean
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/clean
 .PHONY : clean
 
 # The main clean target
@@ -116,22 +116,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/preinstall
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/preinstall
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 CUT/CMakeFiles/CUT.dir/rule:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/CMakeFiles/CUT.dir/rule
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CUT/CMakeFiles/CUT.dir/rule
 .PHONY : CUT/CMakeFiles/CUT.dir/rule
 
 # Convenience name for target.
@@ -141,7 +141,7 @@ CUT: CUT/CMakeFiles/CUT.dir/rule
 
 # fast build rule for target.
 CUT/fast:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/build
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/build
 .PHONY : CUT/fast
 
 main.o: main.c.o
@@ -150,7 +150,7 @@ main.o: main.c.o
 
 # target to build an object file
 main.c.o:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/main.c.o
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/main.c.o
 .PHONY : main.c.o
 
 main.i: main.c.i
@@ -159,7 +159,7 @@ main.i: main.c.i
 
 # target to preprocess a source file
 main.c.i:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/main.c.i
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/main.c.i
 .PHONY : main.c.i
 
 main.s: main.c.s
@@ -168,7 +168,7 @@ main.s: main.c.s
 
 # target to generate assembly for a file
 main.c.s:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/main.c.s
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(MAKE) $(MAKESILENT) -f CUT/CMakeFiles/CUT.dir/build.make CUT/CMakeFiles/CUT.dir/main.c.s
 .PHONY : main.c.s
 
 # Help Target
@@ -194,6 +194,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/michal/Pulpit/app/Linux_coreUsage_BM/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/michal/Pulpit/testbgg/Linux_coreUsage_BM/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

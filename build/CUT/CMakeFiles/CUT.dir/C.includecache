@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/michal/Pulpit/app/Linux_coreUsage_BM/CUT/main.c
+/home/michal/Pulpit/testbgg/Linux_coreUsage_BM/CUT/main.c
 unistd.h
 -
 sys/types.h
@@ -36,5 +36,7 @@ limits.h
 sys/stat.h
 -
 assert.h
+-
+time.h
 -
 
