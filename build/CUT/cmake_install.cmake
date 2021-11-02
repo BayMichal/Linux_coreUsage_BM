@@ -1,4 +1,4 @@
-# Install script for directory: /home/michal/Pulpit/app/Linux_coreUsage_BM/CUT
+# Install script for directory: /home/michal/Pulpit/git/Linux_coreUsage_BM/CUT
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

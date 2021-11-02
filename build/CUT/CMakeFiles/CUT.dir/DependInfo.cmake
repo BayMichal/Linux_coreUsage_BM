@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/michal/Pulpit/app/Linux_coreUsage_BM/CUT/main.c" "/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CUT/CMakeFiles/CUT.dir/main.c.o"
+  "/home/michal/Pulpit/git/Linux_coreUsage_BM/CUT/main.c" "/home/michal/Pulpit/git/Linux_coreUsage_BM/build/CUT/CMakeFiles/CUT.dir/main.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

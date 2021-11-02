@@ -1,4 +1,4 @@
-# Install script for directory: /home/michal/Pulpit/app/Linux_coreUsage_BM
+# Install script for directory: /home/michal/Pulpit/git/Linux_coreUsage_BM
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/michal/Pulpit/app/Linux_coreUsage_BM/build/CUT/cmake_install.cmake")
+  include("/home/michal/Pulpit/git/Linux_coreUsage_BM/build/CUT/cmake_install.cmake")
 
 endif()
 
@@ -56,5 +56,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/michal/Pulpit/app/Linux_coreUsage_BM/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/michal/Pulpit/git/Linux_coreUsage_BM/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
