@@ -14,7 +14,7 @@
 
 ***Rekomendacja Softdog***: Programowy Watchdog (softdog) został wyłączony z użytku (zakomentowany) z tego powodu, że resetuje on cały system. 
 
-***Rekomendacja instalacji***: Aby program zadziałał poprawnie należy uruchomić go poprzez sudo.
+***Rekomendacja instalacji***: Uruchamiany na wirtualnym linuxie d. Ubuntu potrzebował sudo do zapisywania loggera plików
 
 ## Kompilacja oraz build
 - Do kompilacji programu zostały użyte kompilatory clang z flagą -Wevrything oraz gcc z flagą -Wall -Wextra.
@@ -30,7 +30,9 @@
 - Dopracowanie Watchdoga
 - Zmiana organizowania pamieci (malloc,free)
 - Optymalizacja pamięci
-- Podział na pliki *h,*c
+- Podział na pliki *c, *h w celu organizacji kodu.
+- W niektórych dystrubucjach dochodzi do przepełnienia jednej zmiennej, w innych nie, muszę sprawdzić dlaczego :) 
+- 
 
 
 
